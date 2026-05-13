@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Portionly</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">P</div>
+        <div>
+          <h1>Portionly</h1>
+          <p>Умный планировщик блюд и закупки продуктов</p>
+        </div>
+      </div>
+      <button class="ghost-btn" id="clearAllBtn" type="button">Очистить выбор</button>
+    </header>
+
+    <main>
+      <section class="planner-panel">
+        <div class="planner-copy">
+          <span class="eyebrow">Smart meal planning</span>
+          <h2>Собирай рацион без лишней возни и тупых подсчётов</h2>
+          <p>Тап по карточке добавляет блюдо в корзину. Стрелка раскрывает ингредиенты, шаги приготовления и личные заметки. Количество продуктов и КБЖУ автоматически пересчитываются под людей и дни.</p>
+
+          <div class="insight-row">
+            <div class="insight-pill"><span>Авто-пересчёт</span><strong>Ингредиенты + КБЖУ</strong></div>
+            <div class="insight-pill"><span>Сценарий</span><strong id="scenarioText">1 человек · 1 день</strong></div>
+          </div>
+        </div>
+
+        <div class="planner-controls">
+          <div class="setting-card">
+            <span class="setting-label">Количество человек</span>
+            <div class="stepper">
+              <button type="button" data-step="people" data-delta="-1" aria-label="Уменьшить количество человек">−</button>
+              <strong id="peopleValue">1</strong>
+              <button type="button" data-step="people" data-delta="1" aria-label="Увеличить количество человек">+</button>
+            </div>
+          </div>
+
+          <div class="setting-card">
+            <span class="setting-label">Количество дней</span>
+            <div class="stepper">
+              <button type="button" data-step="days" data-delta="-1" aria-label="Уменьшить количество дней">−</button>
+              <strong id="daysValue">1</strong>
+              <button type="button" data-step="days" data-delta="1" aria-label="Увеличить количество дней">+</button>
+            </div>
+          </div>
+
+          <div class="summary-card">
+            <div>
+              <span class="summary-label">Итого на каждое блюдо</span>
+              <strong id="portionValue">1 порция</strong>
+            </div>
+            <div class="summary-mini">
+              <div><b id="recipesCount">0</b><span>всего блюд</span></div>
+              <div><b id="selectedCountTop">0</b><span>выбрано</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="category-shell">
+        <div class="section-head">
+          <div>
+            <h2>Каталог рецептов</h2>
+            <p>Можно фильтровать, искать и быстро собирать список блюд в корзину.</p>
+          </div>
+        </div>
+
+        <div class="category-tabs" id="categoryTabs"></div>
+
+        <div class="controls-bar">
+          <label class="search-field">
+            <span>⌕</span>
+            <input id="searchInput" type="search" placeholder="Поиск по названию блюда или ингредиентам" autocomplete="off" />
+          </label>
+
+          <div class="view-toggles">
+            <button class="toggle-chip" id="selectedOnlyBtn" type="button" aria-pressed="false">Только выбранные</button>
+            <button class="toggle-chip ghost" id="collapseAllBtn" type="button">Свернуть всё</button>
+          </div>
+        </div>
+
+        <div class="results-meta" id="resultsMeta">Показаны все блюда</div>
+      </section>
+
+      <section class="cards-grid" id="cardsGrid" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <button class="basket-fab" id="basketFab" type="button" aria-label="Открыть корзину">
+    <span>🛒</span><b id="basketBadge">0</b>
+  </button>
+
+  <button class="selection-dock" id="selectionDock" type="button" aria-label="Открыть корзину">
+    <div class="selection-dock__text">
+      <strong id="selectionDockTitle">0 блюд выбрано</strong>
+      <span id="selectionDockMeta">Нажми, чтобы открыть итоговый список</span>
+    </div>
+    <div class="selection-dock__action">Открыть корзину</div>
+  </button>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-backdrop" id="basketModal" aria-hidden="true">
+    <section class="modal-panel basket-panel" role="dialog" aria-modal="true" aria-labelledby="basketTitle">
+      <div class="modal-head">
+        <div>
+          <span class="eyebrow">Корзина</span>
+          <h2 id="basketTitle">Итог по выбранным блюдам</h2>
+          <p class="modal-subtitle" id="basketSubTitle"></p>
+        </div>
+        <button class="modal-close" data-close-modal type="button" aria-label="Закрыть">×</button>
+      </div>
+
+      <div class="selected-strip" id="selectedStrip"></div>
+      <div class="basket-summary" id="basketSummary"></div>
+
+      <div class="basket-layout">
+        <section class="modal-card">
+          <div class="modal-card-head">
+            <h3>Список продуктов</h3>
+            <button class="copy-btn" id="copyBtn" type="button">Скопировать</button>
+          </div>
+          <div class="totals-list" id="totalsList"></div>
+        </section>
+
+        <section class="modal-card">
+          <h3>Выбранные блюда</h3>
+          <div class="recipe-summary-list" id="recipeSummaryList"></div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <script src="recipes-data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
