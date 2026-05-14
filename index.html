@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Portionly</title>
-  <link rel="stylesheet" href="style.css?v=8" />
+  <link rel="stylesheet" href="style.css?v=9" />
 </head>
 <body>
   <div class="app-shell">
@@ -28,32 +28,33 @@
 
           <div class="insight-row">
             <div class="insight-pill"><span>Авто-пересчёт</span><strong>Ингредиенты + КБЖУ</strong></div>
-            <div class="insight-pill"><span>Сценарий</span><strong id="scenarioText">1 человек · 1 день</strong></div>
           </div>
         </div>
 
+        <!-- Global settings moved or kept, but per-dish will be handled in JS -->
         <div class="planner-controls">
+          <!-- Global controls kept for overall planning -->
           <div class="setting-card">
             <span class="setting-label">Количество человек</span>
             <div class="stepper">
-              <button type="button" data-step="people" data-delta="-1" aria-label="Уменьшить количество человек">−</button>
+              <button type="button" data-step="people" data-delta="-1">−</button>
               <strong id="peopleValue">1</strong>
-              <button type="button" data-step="people" data-delta="1" aria-label="Увеличить количество человек">+</button>
+              <button type="button" data-step="people" data-delta="1">+</button>
             </div>
           </div>
 
           <div class="setting-card">
             <span class="setting-label">Количество дней</span>
             <div class="stepper">
-              <button type="button" data-step="days" data-delta="-1" aria-label="Уменьшить количество дней">−</button>
+              <button type="button" data-step="days" data-delta="-1">−</button>
               <strong id="daysValue">1</strong>
-              <button type="button" data-step="days" data-delta="1" aria-label="Увеличить количество дней">+</button>
+              <button type="button" data-step="days" data-delta="1">+</button>
             </div>
           </div>
 
           <div class="summary-card">
             <div>
-              <span class="summary-label">Итого на каждое блюдо</span>
+              <span class="summary-label">Общий сценарий</span>
               <strong id="portionValue">1 порция</strong>
             </div>
             <div class="summary-mini">
@@ -138,7 +139,7 @@
     </section>
   </div>
 
-  <script src="recipes-data.js?v=8"></script>
-  <script src="script.js?v=8"></script>
+  <script src="recipes-data.js?v=9"></script>
+  <script src="script.js?v=9"></script>
 </body>
 </html>
