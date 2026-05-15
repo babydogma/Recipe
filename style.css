@@ -1606,7 +1606,7 @@ body {
 .filter-main {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   max-height: none;
   min-height: 50px;
   overflow: visible;
@@ -1620,8 +1620,12 @@ body {
   color: #fff8ed;
 }
 .category-tabs {
-  --filter-left-fade: 0px;
+.category-tabs {
+  --filter-left-fade-soft: 0px;
+  --filter-left-fade-mid: 0px;
+  --filter-left-fade-full: 0px;
   --filter-right-fade: 22px;
+
   min-width: 0;
   flex: 1 1 auto;
   display: flex;
@@ -1629,27 +1633,41 @@ body {
   gap: 8px;
   padding: 0 0 2px;
   scroll-padding-left: 0;
+
   -webkit-mask-image: linear-gradient(
     90deg,
-    transparent 0,
-    #000 var(--filter-left-fade),
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0.2) var(--filter-left-fade-soft),
+    rgba(0, 0, 0, 0.68) var(--filter-left-fade-mid),
+    #000 var(--filter-left-fade-full),
     #000 calc(100% - var(--filter-right-fade)),
-    transparent 100%
+    rgba(0, 0, 0, 0) 100%
   );
   mask-image: linear-gradient(
     90deg,
-    transparent 0,
-    #000 var(--filter-left-fade),
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0.2) var(--filter-left-fade-soft),
+    rgba(0, 0, 0, 0.68) var(--filter-left-fade-mid),
+    #000 var(--filter-left-fade-full),
     #000 calc(100% - var(--filter-right-fade)),
-    transparent 100%
+    rgba(0, 0, 0, 0) 100%
   );
+
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
 }
-.category-tabs.has-left-fade { --filter-left-fade: 16px; }
-.category-tabs.no-right-fade { --filter-right-fade: 0px; }
+
+.category-tabs.has-left-fade {
+  --filter-left-fade-soft: 8px;
+  --filter-left-fade-mid: 20px;
+  --filter-left-fade-full: 38px;
+}
+
+.category-tabs.no-right-fade {
+  --filter-right-fade: 0px;
+}
 .category-tab {
   min-height: 46px;
   padding: 0 14px;
