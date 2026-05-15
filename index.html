@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Portionly</title>
+  <meta name="theme-color" content="#070605" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Portionly" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.webmanifest?v=21" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=21" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=21" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/app-icon-192.png?v=21" />
+  <link rel="shortcut icon" href="favicon.ico?v=21" />
+  <link rel="stylesheet" href="style.css?v=30" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-copy">
+          <h1>Portionly</h1>
+          <p>Планировщик блюд и закупки продуктов</p>
+        </div>
+      </div>
+      <button class="info-mini-btn" id="aboutToggleBtn" type="button" aria-expanded="false" aria-controls="aboutPanel">
+        <span>?</span>
+        <strong>Как работает</strong>
+      </button>
+    </header>
+
+    <main>
+      <section class="about-panel" id="aboutPanel" aria-hidden="true">
+        <div class="about-panel__head">
+          <span class="eyebrow">Smart meal planning</span>
+          <button class="about-close" id="aboutCloseBtn" type="button" aria-label="Скрыть подсказку">×</button>
+        </div>
+        <h2>Выбирай блюда — продукты посчитаются сами</h2>
+        <p>Тап по карточке добавляет блюдо в корзину. В раскрытии рецепта можно отдельно настроить людей и дни, добавить заметку и посмотреть пересчитанные ингредиенты.</p>
+        <div class="about-points">
+          <div><span>Расчёт</span><strong>Отдельно для каждого блюда</strong></div>
+          <div><span>Корзина</span><strong>Ингредиенты + КБЖУ</strong></div>
+        </div>
+      </section>
+
+      <section class="category-shell">
+        <div class="section-head">
+          <div>
+            <h2>Каталог рецептов</h2>
+            <p>Фильтруй, ищи и собирай список блюд в корзину.</p>
+          </div>
+        </div>
+
+        <div class="filter-shell" id="filterShell">
+          <div class="filter-main" id="filterMain">
+            <button class="search-orb" id="searchToggleBtn" type="button" aria-label="Открыть поиск">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M10.8 18.1a7.3 7.3 0 1 1 0-14.6 7.3 7.3 0 0 1 0 14.6Z" />
+                <path d="M16 16l4.2 4.2" />
+              </svg>
+            </button>
+            <div class="category-tabs" id="categoryTabs"></div>
+          </div>
+
+          <div class="search-panel" id="searchPanel" aria-hidden="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M10.8 18.1a7.3 7.3 0 1 1 0-14.6 7.3 7.3 0 0 1 0 14.6Z" />
+              <path d="M16 16l4.2 4.2" />
+            </svg>
+            <input id="searchInput" type="search" placeholder="Поиск по блюду или ингредиентам" autocomplete="off" />
+            <button id="searchCloseBtn" type="button" aria-label="Закрыть поиск">×</button>
+          </div>
+        </div>
+
+        <div class="results-meta" id="resultsMeta">Показаны все блюда</div>
+      </section>
+
+      <section class="cards-grid" id="cardsGrid" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <button class="selection-dock" id="selectionDock" type="button" aria-label="Открыть корзину" hidden>
+    <span class="selection-dock__icon" aria-hidden="true">🛒</span>
+    <b id="selectionDockCount">0</b>
+  </button>
+
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <div class="modal-backdrop" id="basketModal" aria-hidden="true">
+    <section class="modal-panel basket-panel" role="dialog" aria-modal="true" aria-labelledby="basketTitle">
+      <div class="modal-head">
+        <div>
+          <span class="eyebrow">Корзина</span>
+          <h2 id="basketTitle">Итог по выбранным блюдам</h2>
+          <p class="modal-subtitle" id="basketSubTitle"></p>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-clear" id="clearAllBtn" type="button">Очистить</button>
+          <button class="modal-close" data-close-modal type="button" aria-label="Закрыть">×</button>
+        </div>
+      </div>
+
+      <div class="selected-strip" id="selectedStrip"></div>
+      <div class="basket-summary" id="basketSummary"></div>
+
+      <section class="modal-card modal-card--products">
+        <div class="modal-card-head">
+          <div>
+            <h3>Список продуктов</h3>
+            <p>Разложено по разделам, чтобы проще закупаться.</p>
+          </div>
+          <button class="copy-btn" id="copyBtn" type="button">Скопировать</button>
+        </div>
+        <div class="totals-list" id="totalsList"></div>
+      </section>
+    </section>
+  </div>
+
+  <script src="recipes-data.js?v=28"></script>
+  <script src="script.js?v=32"></script>
+</body>
+</html>
