@@ -99,7 +99,7 @@ window.RECIPES = [
     portions: 1,
     meta: "на 1 порцию",
     cookTime: "30–40 мин",
-    nutrition: { kcal: 518, protein: 27.3, fat: 23.2, carbs: 48.5 },
+    nutrition: { kcal: 518, protein: 27, fat: 23, carbs: 48 },
     ingredients: [
       { name: "Овсяные хлопья", amount: 55, unit: "г" },
       { name: "Яйцо", amount: 1, unit: "шт" },
