@@ -410,7 +410,7 @@ window.RECIPES.push(
 },
 {
   "id": "mini-cottage-cheese-casserole",
-  "title": "Мини-творожная запеканка",
+  "title": "Творожная запеканка",
   "category": "breakfast",
   "image": "assets/mini-cottage-cheese-casserole.jpg",
   "heroImage": "assets/mini-cottage-cheese-casserole.jpg",
