@@ -62,6 +62,24 @@
     refs: {}
   };
 
+  function resolveAssetUrl(path) {
+    const raw = String(path || "").trim();
+    if (!raw) return "";
+    if (/^(?:https?:|data:|blob:|\/\/)/i.test(raw)) return raw;
+
+    try {
+      return new URL(raw, document.baseURI).href;
+    } catch (error) {
+      return raw;
+    }
+  }
+
+  function cssUrl(path) {
+    const url = resolveAssetUrl(path);
+    if (!url) return "none";
+    return `url("${String(url).replace(/"/g, '\\"')}")`;
+  }
+
   function getCategories() {
     return Array.isArray(window.CATEGORIES) ? window.CATEGORIES : [];
   }
@@ -791,7 +809,7 @@
       if (!category) return "";
       const media = getCategoryTileMedia(category.id);
       const style = media
-        ? ` style="--tile-image: url('${escapeHTML(media.image)}'); --tile-image-position: ${escapeHTML(media.position || "center")};"`
+        ? ` style="--tile-image: ${cssUrl(media.image)}; --tile-image-position: ${escapeHTML(media.position || "center")};"`
         : "";
       const countLabel = `${category.count} ${plural(category.count, "блюдо", "блюда", "блюд")}`;
       const classes = [
@@ -816,7 +834,7 @@
 
     state.refs.categoryTabs.innerHTML = `
       <div class="dashboard-menu">
-        <div class="dashboard-hero-card dashboard-hero-card--locked" aria-label="Блок в работе" style="--tile-image: url('assets/category-tiles/lunch-v091.webp'); --tile-image-position: center 45%;">
+        <div class="dashboard-hero-card dashboard-hero-card--locked" aria-label="Блок в работе" style="--tile-image: ${cssUrl('assets/category-tiles/lunch-v091.webp')}; --tile-image-position: center 45%;">
           <span class="dashboard-hero-card__work">В работе</span>
         </div>
 
@@ -841,21 +859,21 @@
         <section class="dashboard-section" aria-label="Планирование и покупки">
           <h2>Планирование и покупки</h2>
           <div class="dashboard-planning-list">
-            <button class="dashboard-planning-row" type="button" data-dashboard-action="basket" style="--row-image: url('assets/dashboard-planning/shopping-v095.webp'); --row-image-position: left center;">
+            <button class="dashboard-planning-row" type="button" data-dashboard-action="basket" style="--row-image: ${cssUrl('assets/dashboard-planning/shopping-v095.webp')}; --row-image-position: left center;">
               <span class="dashboard-planning-row__copy">
                 <strong>Список покупок</strong>
                 <small>${productCount} ${plural(productCount, "продукт", "продукта", "продуктов")}</small>
               </span>
               <span class="dashboard-planning-row__arrow" aria-hidden="true">›</span>
             </button>
-            <button class="dashboard-planning-row" type="button" data-smart-filter="quick" style="--row-image: url('assets/dashboard-planning/quick-v095.webp'); --row-image-position: left center;">
+            <button class="dashboard-planning-row" type="button" data-smart-filter="quick" style="--row-image: ${cssUrl('assets/dashboard-planning/quick-v095.webp')}; --row-image-position: left center;">
               <span class="dashboard-planning-row__copy">
                 <strong>Быстрые блюда</strong>
                 <small>до 20 минут</small>
               </span>
               <span class="dashboard-planning-row__arrow" aria-hidden="true">›</span>
             </button>
-            <button class="dashboard-planning-row" type="button" data-smart-filter="lowcal" style="--row-image: url('assets/dashboard-planning/lowcal-v095.webp'); --row-image-position: left center;">
+            <button class="dashboard-planning-row" type="button" data-smart-filter="lowcal" style="--row-image: ${cssUrl('assets/dashboard-planning/lowcal-v095.webp')}; --row-image-position: left center;">
               <span class="dashboard-planning-row__copy">
                 <strong>Низкокалорийные</strong>
                 <small>до 350 ккал</small>
@@ -941,7 +959,8 @@
   }
 
   function getCategoryTileMedia(categoryId) {
-    return CATEGORY_TILE_MEDIA[String(categoryId || "")] || null;
+    const media = CATEGORY_TILE_MEDIA[String(categoryId || "")] || null;
+    return media ? { ...media, image: resolveAssetUrl(media.image) } : null;
   }
 
   function categoryIconTemplate(categoryId) {
@@ -1691,6 +1710,9 @@
             <button class="recipe-quick-action" type="button" data-action="quick-served" data-recipe-id="${escapeHTML(recipe.id)}" aria-label="Отметить блюдо приготовленным">
               <span aria-hidden="true">✓</span><strong>Готово</strong>
             </button>
+            <button class="recipe-quick-action" type="button" data-action="open-detail" data-recipe-id="${escapeHTML(recipe.id)}" aria-label="Открыть страницу рецепта">
+              <span aria-hidden="true">›</span><strong>Рецепт</strong>
+            </button>
           </div>
 
           <button class="expand-toggle ${expanded ? "open" : ""}" type="button" data-action="expand" data-recipe-id="${escapeHTML(recipe.id)}" aria-expanded="${expanded ? "true" : "false"}" aria-controls="recipe-details-${escapeHTML(recipe.id)}">
@@ -1772,7 +1794,7 @@
     const peopleText = plan ? formatNumber(plan.people) : "—";
     const portionsText = portions ? formatNumber(portions) : "—";
     const nutrition = recipe && portions ? getScaledNutrition(recipe, portions) : null;
-    const heroStyle = image ? ` style="--profile-hero-image: url('${escapeHTML(image)}');"` : "";
+    const heroStyle = image ? ` style="--profile-hero-image: ${cssUrl(image)};"` : "";
     const title = recipe?.title || "История пока пуста";
     const subtitle = recipe
       ? `Последний раз: ${formatCookedDateTime(entry?.cookedAt)}`
@@ -1903,7 +1925,7 @@
       const count = getCookedCountByCategory(category.id);
       const media = getCategoryTileMedia(category.id);
       const style = media
-        ? ` style="--tile-image: url('${escapeHTML(media.image)}'); --tile-image-position: ${escapeHTML(media.position || "center")};"`
+        ? ` style="--tile-image: ${cssUrl(media.image)}; --tile-image-position: ${escapeHTML(media.position || "center")};"`
         : "";
       return `
         <button class="profile-category-tile ${media ? "profile-category-tile--image" : ""}" type="button" data-action="profile-category" data-category-id="${escapeHTML(category.id)}"${style}>
@@ -2072,15 +2094,16 @@
 
     state.cookedHistory = [entry, ...state.cookedHistory].slice(0, 500);
     saveCookedHistory();
-    openRecipeServedSuccess(recipe);
+    openRecipeServedSuccess(recipe, entry.id);
+    showToast("Блюдо добавлено в историю", "success");
   }
 
-  function openRecipeServedSuccess(recipe) {
+  function openRecipeServedSuccess(recipe, entryId = "") {
     const screen = state.refs.recipeScreen;
     if (!recipe || !screen) return;
 
     state.activeRecipeId = recipe.id;
-    screen.innerHTML = recipeServedSuccessTemplate(recipe);
+    screen.innerHTML = recipeServedSuccessTemplate(recipe, entryId);
     screen.hidden = false;
     screen.setAttribute("aria-hidden", "false");
     document.body.classList.add("recipe-screen-open");
@@ -2091,7 +2114,8 @@
     });
   }
 
-  function recipeServedSuccessTemplate(recipe) {
+  function recipeServedSuccessTemplate(recipe, entryId = "") {
+    const ratingValues = [5, 4, 3, 2, 1];
     return `
       <article class="recipe-screen__panel recipe-served-success-screen" role="dialog" aria-modal="true" aria-label="Блюдо подано: ${escapeHTML(recipe.title)}">
         <section class="recipe-served-success-card">
@@ -2099,8 +2123,19 @@
           <div class="recipe-served-success-card__copy">
             <span>Подано к столу</span>
             <h2>Ты молодец! Приятного аппетита</h2>
-            <p>Не забудь оценить блюдо в профиле</p>
+            <p>Блюдо сохранено в историю. Можно сразу поставить оценку.</p>
           </div>
+          ${entryId ? `
+            <div class="recipe-served-rating" aria-label="Оценка блюда">
+              <strong>Как получилось?</strong>
+              <div class="recipe-served-rating__grid">
+                ${ratingValues.map(value => `
+                  <button type="button" data-action="rating-save" data-recipe-id="${escapeHTML(recipe.id)}" data-entry-id="${escapeHTML(entryId)}" data-rating="${value}">
+                    <span aria-hidden="true">★</span>${value}
+                  </button>`).join("")}
+              </div>
+            </div>
+          ` : ""}
           <button class="recipe-served-success-card__button" type="button" data-action="served-home" data-recipe-id="${escapeHTML(recipe.id)}">
             Выйти в главное меню
           </button>
@@ -2653,7 +2688,7 @@
   function getRecipeStepImage(recipe, index) {
     const sources = recipe?.stepImages || recipe?.methodImages || recipe?.processImages || [];
     if (!Array.isArray(sources)) return "";
-    return String(sources[index] || "").trim();
+    return resolveAssetUrl(sources[index]);
   }
 
 
@@ -2793,7 +2828,7 @@
 
   function getRecipeImage(recipe) {
     const image = String(recipe.heroImage || recipe.image || "").trim();
-    return image || "";
+    return resolveAssetUrl(image);
   }
 
   function getCookTimeLabel(recipe) {
@@ -4089,7 +4124,7 @@
 
   function preloadRecipeImages() {
     const recipeUrls = getRecipes().map(getRecipeImage).filter(Boolean);
-    const tileUrls = Object.values(CATEGORY_TILE_MEDIA).map(item => item?.image).filter(Boolean);
+    const tileUrls = Object.values(CATEGORY_TILE_MEDIA).map(item => resolveAssetUrl(item?.image)).filter(Boolean);
     const urls = Array.from(new Set([...tileUrls, ...recipeUrls]));
     if (!urls.length) return;
 
