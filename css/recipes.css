@@ -202,8 +202,8 @@ basket cleanup ===== */
 
 .recipe-quick-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   margin-top: 10px;
 }
 
@@ -212,13 +212,13 @@ basket cleanup ===== */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 0 10px;
+  gap: 6px;
+  padding: 0 8px;
   border: 1px solid rgba(255,221,176,.12);
   border-radius: 16px;
   background: rgba(255,255,255,.045);
   color: rgba(255,248,237,.86);
-  font-size: 12.5px;
+  font-size: 12px;
   line-height: 1;
   font-weight: 850;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
