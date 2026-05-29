@@ -6068,3 +6068,98 @@ basket cleanup ===== */
     font-size: 30px;
   }
 }
+
+/* Served success dialog */
+.recipe-served-success-screen {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: calc(28px + var(--safe-top)) 18px calc(28px + var(--safe-bottom));
+}
+
+.recipe-served-success-card {
+  display: grid;
+  gap: 18px;
+  width: min(100%, 430px);
+  padding: 24px;
+  border: 1px solid rgba(255,232,202,.14);
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at 50% 0, rgba(255,190,114,.20), transparent 48%),
+    linear-gradient(180deg, rgba(28,22,18,.92), rgba(12,10,8,.88));
+  box-shadow: 0 28px 72px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.06);
+  text-align: center;
+}
+
+.recipe-served-success-card__icon {
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 2px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,190,114,.28);
+  background: rgba(255,190,114,.14);
+  color: #ffbe72;
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 920;
+  box-shadow: 0 18px 42px rgba(255,190,114,.12), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.recipe-served-success-card__copy {
+  display: grid;
+  gap: 8px;
+}
+
+.recipe-served-success-card__copy span {
+  color: rgba(255,248,237,.58);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 860;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.recipe-served-success-card__copy h2 {
+  margin: 0;
+  color: #ffbe72;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(30px, 8vw, 42px);
+  line-height: .98;
+  letter-spacing: -.055em;
+  font-weight: 760;
+}
+
+.recipe-served-success-card__copy p {
+  margin: 2px 0 0;
+  color: rgba(255,248,237,.62);
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 680;
+}
+
+.recipe-served-success-card__button {
+  min-height: 56px;
+  margin-top: 4px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ffd39b, #ffad4e);
+  color: #26170d;
+  font-size: 15.5px;
+  font-weight: 900;
+  box-shadow: 0 18px 42px rgba(255,173,78,.20), inset 0 1px 0 rgba(255,255,255,.35);
+}
+
+@media (max-width: 390px) {
+  .recipe-served-success-card {
+    padding: 22px 18px;
+    border-radius: 28px;
+  }
+
+  .recipe-served-success-card__icon {
+    width: 62px;
+    height: 62px;
+    font-size: 34px;
+  }
+}
