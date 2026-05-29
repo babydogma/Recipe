@@ -7,8 +7,8 @@
 Залей содержимое этой папки в корень репозитория:
 
 - index.html
-- style.css
-- script.js
+- css/
+- js/
 - recipes/
 - assets/
 
