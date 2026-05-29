@@ -1645,63 +1645,170 @@
 
   function profileScreenTemplate() {
     const history = getCookedHistory();
-    const total = history.length;
-    const rated = history.filter(item => Number(item.rating) > 0);
-    const avg = getAverageRating(history);
-    const recent = getRecentCookedRecipes(5);
-    const recommendations = getProfileRecommendations(3);
+    const latestEntry = history[0] || null;
+    const latestRecipe = latestEntry ? getRecipe(latestEntry.recipeId) : null;
+    const recentEntries = history.slice(0, 5);
 
     return profileScreenShell(`
-      <header class="profile-head">
+      <header class="profile-dashboard-head">
         <button class="recipe-screen__round profile-back" type="button" data-recipe-screen-close aria-label="Назад">
           <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M15.2 5.4 8.6 12l6.6 6.6"/></svg>
         </button>
-        <div>
+        <div class="profile-dashboard-title">
           <span>Профиль</span>
-          <h2>История питания</h2>
-          <p>Приготовленные блюда, оценки и рекомендации дня.</p>
+          <h2>Дневник питания</h2>
+          <p>История блюд, привычек и любимых приёмов пищи.</p>
         </div>
       </header>
 
-      <section class="profile-stat-grid" aria-label="Статистика">
-        <div><strong>${total}</strong><span>${plural(total, "приготовление", "приготовления", "приготовлений")}</span></div>
-        <div><strong>${rated.length ? formatRating(avg) : "—"}</strong><span>средняя оценка</span></div>
-      </section>
+      ${profileDashboardHeroTemplate(latestRecipe, latestEntry)}
+      ${profileWeekActivityTemplate(history)}
 
-      <section class="profile-section">
+      <section class="profile-section profile-section--history">
         <div class="profile-section__head">
-          <h3>Категории</h3>
-          <span>${total} всего</span>
+          <h3>История</h3>
+          <span>${recentEntries.length ? `${recentEntries.length} ${plural(recentEntries.length, "запись", "записи", "записей")}` : "пока пусто"}</span>
         </div>
-        <div class="profile-category-grid">
-          ${profileCategoryTilesTemplate()}
-        </div>
-      </section>
-
-      <section class="profile-section">
-        <div class="profile-section__head">
-          <h3>Рекомендации дня</h3>
-          <span>по истории</span>
-        </div>
-        <div class="profile-recommendations">
-          ${recommendations.length
-            ? recommendations.map(recipe => profileRecipeRowTemplate(recipe, "profile-open-recipe")).join("")
-            : `<div class="profile-empty">Пока нет рекомендаций. Отметь пару блюд как приготовленные.</div>`}
-        </div>
-      </section>
-
-      <section class="profile-section">
-        <div class="profile-section__head">
-          <h3>Последние приготовления</h3>
-          <span>${recent.length}</span>
-        </div>
-        <div class="profile-recent-list">
-          ${recent.length
-            ? recent.map(recipe => profileRecipeRowTemplate(recipe, "profile-recipe")).join("")
-            : `<div class="profile-empty">История пустая. Нажми «Подано к столу» после готовки.</div>`}
+        <div class="profile-timeline-list">
+          ${recentEntries.length
+            ? recentEntries.map(profileTimelineRowTemplate).join("")
+            : `<div class="profile-empty profile-empty--timeline">История пустая. Нажми «Подано к столу» после готовки — здесь появится последнее блюдо.</div>`}
         </div>
       </section>
     `);
+  }
+
+
+  function profileDashboardHeroTemplate(recipe, entry) {
+    const image = recipe ? getRecipeImage(recipe) : "";
+    const portions = entry ? getHistoryEntryPortions(entry) : null;
+    const plan = recipe ? getRecipePlan(recipe.id) : null;
+    const peopleText = plan ? formatNumber(plan.people) : "—";
+    const portionsText = portions ? formatNumber(portions) : "—";
+    const nutrition = recipe && portions ? getScaledNutrition(recipe, portions) : null;
+    const heroStyle = image ? ` style="--profile-hero-image: url('${escapeHTML(image)}');"` : "";
+    const title = recipe?.title || "История пока пуста";
+    const subtitle = recipe
+      ? `Последний раз: ${formatCookedDateTime(entry?.cookedAt)}`
+      : "Приготовь блюдо и нажми «Подано к столу» — дневник заполнится автоматически.";
+
+    return `
+      <section class="profile-dashboard-hero ${image ? "" : "profile-dashboard-hero--empty"}" aria-label="Последнее приготовленное блюдо"${heroStyle}>
+        <div class="profile-dashboard-hero__stats">
+          <span>Последнее блюдо</span>
+          <h3>${escapeHTML(title)}</h3>
+          <p>${escapeHTML(subtitle)}</p>
+          <div class="profile-dashboard-hero__metrics" aria-label="Расчёт последнего блюда">
+            <div><strong>${escapeHTML(peopleText)}</strong><small>людей</small></div>
+            <div><strong>${escapeHTML(portionsText)}</strong><small>${portions ? plural(portions, "порция", "порции", "порций") : "порций"}</small></div>
+            <div><strong>${nutrition ? escapeHTML(formatNumber(nutrition.kcal)) : "—"}</strong><small>ккал</small></div>
+          </div>
+          <div class="profile-dashboard-hero__nutrition" aria-label="КБЖУ последнего блюда">
+            ${profileNutritionPill("Б", nutrition?.protein, "г")}
+            ${profileNutritionPill("Ж", nutrition?.fat, "г")}
+            ${profileNutritionPill("У", nutrition?.carbs, "г")}
+          </div>
+        </div>
+      </section>`;
+  }
+
+  function profileNutritionPill(label, value, unit = "") {
+    const text = Number.isFinite(Number(value)) ? `${formatNumber(value)}${unit ? ` ${unit}` : ""}` : "—";
+    return `<span><b>${escapeHTML(label)}</b>${escapeHTML(text)}</span>`;
+  }
+
+  function profileWeekActivityTemplate(history) {
+    const weekDays = getProfileWeekDays();
+    const activeDays = new Set(
+      history
+        .map(entry => profileDateKey(entry.cookedAt))
+        .filter(Boolean)
+    );
+
+    return `
+      <section class="profile-week-card" aria-label="Активность по дням недели">
+        <div class="profile-week-card__days">
+          ${weekDays.map(day => `
+            <span class="profile-week-day ${activeDays.has(day.key) ? "is-active" : ""} ${day.isToday ? "is-today" : ""}">
+              <b>${escapeHTML(day.label)}</b>
+              <i aria-hidden="true"></i>
+            </span>
+          `).join("")}
+        </div>
+        <div class="profile-week-card__chart" aria-hidden="true"><i></i><i></i><i></i></div>
+      </section>`;
+  }
+
+  function profileTimelineRowTemplate(entry) {
+    const recipe = getRecipe(entry.recipeId);
+    if (!recipe) return "";
+
+    const image = getRecipeImage(recipe);
+    const portions = getHistoryEntryPortions(entry);
+    const nutrition = portions ? getScaledNutrition(recipe, portions) : null;
+    const date = formatCookedDateParts(entry.cookedAt);
+    const meta = [
+      nutrition ? `${formatNumber(nutrition.kcal)} ккал` : "",
+      entry.rating ? `${formatRating(entry.rating)} ★` : ""
+    ].filter(Boolean).join(" · ");
+
+    return `
+      <button class="profile-timeline-row" type="button" data-action="profile-recipe" data-recipe-id="${escapeHTML(recipe.id)}">
+        <span class="profile-timeline-row__date"><b>${escapeHTML(date.date)}</b><small>${escapeHTML(date.time)}</small></span>
+        <span class="profile-timeline-row__pin" aria-hidden="true"></span>
+        <span class="profile-timeline-row__image">
+          ${image ? `<img src="${escapeHTML(image)}" alt="${escapeHTML(recipe.title)}" loading="lazy" decoding="async" onerror="window.handleRecipeImageError(this)">` : ""}
+        </span>
+        <span class="profile-timeline-row__body">
+          <strong>${escapeHTML(recipe.title)}</strong>
+          <small>${escapeHTML(meta || "КБЖУ не указано")}</small>
+        </span>
+        <span class="profile-timeline-row__arrow" aria-hidden="true">›</span>
+      </button>`;
+  }
+
+  function getHistoryEntryPortions(entry) {
+    const portions = Number(entry?.portions);
+    return Number.isFinite(portions) && portions > 0 ? portions : 1;
+  }
+
+  function getProfileWeekDays() {
+    const today = new Date();
+    const monday = new Date(today);
+    const day = monday.getDay() || 7;
+    monday.setHours(0, 0, 0, 0);
+    monday.setDate(monday.getDate() - day + 1);
+    const labels = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+
+    return labels.map((label, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      return {
+        label,
+        key: profileDateKey(date),
+        isToday: profileDateKey(date) === profileDateKey(today)
+      };
+    });
+  }
+
+  function profileDateKey(value) {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  }
+
+  function formatCookedDateParts(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return { date: "дата", time: "—" };
+    return {
+      date: date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }).replace(".", ""),
+      time: date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })
+    };
+  }
+
+  function formatCookedDateTime(value) {
+    const parts = formatCookedDateParts(value);
+    return `${parts.date}, ${parts.time}`;
   }
 
   function profileCategoryTilesTemplate() {

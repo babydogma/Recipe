@@ -4818,7 +4818,98 @@ basket cleanup ===== */
   text-transform: uppercase;
 }
 
-.profile-dashboard-hero__stats strong {
+.profile-dashboard-hero--empty {
+  --profile-hero-image: linear-gradient(135deg, rgba(255,190,114,.11), rgba(255,255,255,.025));
+}
+
+.profile-dashboard-hero__stats h3 {
+  max-width: 285px;
+  margin: 0;
+  color: #fff8ed;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(27px, 7vw, 38px);
+  line-height: .96;
+  letter-spacing: -.06em;
+  font-weight: 560;
+  text-wrap: balance;
+}
+
+.profile-dashboard-hero__stats p {
+  max-width: 245px;
+  margin: 9px 0 0;
+  color: rgba(255,248,237,.66);
+  font-size: 13px;
+  line-height: 1.24;
+  font-weight: 620;
+}
+
+.profile-dashboard-hero__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, auto));
+  gap: 0;
+  width: min(100%, 285px);
+  margin-top: 17px;
+}
+
+.profile-dashboard-hero__metrics div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding-right: 14px;
+}
+
+.profile-dashboard-hero__metrics div + div {
+  padding-left: 14px;
+  border-left: 1px solid rgba(255,232,202,.20);
+}
+
+.profile-dashboard-hero__metrics strong {
+  color: #fff8ed;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(30px, 8vw, 44px);
+  line-height: .82;
+  letter-spacing: -.045em;
+  font-weight: 520;
+}
+
+.profile-dashboard-hero__metrics small {
+  margin-top: 0;
+  color: rgba(255,248,237,.70);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 650;
+}
+
+.profile-dashboard-hero__nutrition {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.profile-dashboard-hero__nutrition span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid rgba(255,232,202,.13);
+  border-radius: 999px;
+  background: rgba(8,7,6,.42);
+  color: rgba(255,248,237,.74);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 720;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.profile-dashboard-hero__nutrition b {
+  color: #ffbe72;
+  font-weight: 900;
+}
+
+.profile-dashboard-hero__stats > strong {
   color: #fff8ed;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 49px;
@@ -4827,14 +4918,13 @@ basket cleanup ===== */
   font-weight: 520;
 }
 
-.profile-dashboard-hero__stats small {
+.profile-dashboard-hero__stats > small {
   margin-top: 5px;
   color: rgba(255,248,237,.73);
   font-size: 13px;
   line-height: 1.05;
   font-weight: 590;
 }
-
 .profile-dashboard-hero__stats hr {
   width: min(100%, 155px);
   height: 1px;
@@ -5112,6 +5202,13 @@ basket cleanup ===== */
   border-radius: 24px;
   background: rgba(11,9,8,.74);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.profile-empty--timeline {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .profile-timeline-row {
@@ -5665,6 +5762,85 @@ basket cleanup ===== */
 @media (max-width: 390px) {
   .profile-screen {
     padding-inline: 14px;
+  }
+
+  .profile-dashboard-head {
+    margin-bottom: 18px;
+  }
+
+  .profile-dashboard-title h2 {
+    font-size: clamp(38px, 14vw, 50px);
+  }
+
+  .profile-dashboard-title p {
+    max-width: 292px;
+    font-size: 14px;
+  }
+
+  .profile-dashboard-hero {
+    min-height: 285px;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: end;
+    padding: 18px;
+    background-position: center, 66% center, center, center;
+  }
+
+  .profile-dashboard-hero__stats h3 {
+    max-width: 245px;
+    font-size: 28px;
+  }
+
+  .profile-dashboard-hero__stats p {
+    max-width: 225px;
+  }
+
+  .profile-dashboard-hero__metrics {
+    width: 100%;
+  }
+
+  .profile-dashboard-hero__metrics div {
+    padding-right: 10px;
+  }
+
+  .profile-dashboard-hero__metrics div + div {
+    padding-left: 10px;
+  }
+
+  .profile-dashboard-hero__metrics strong {
+    font-size: 31px;
+  }
+
+  .profile-week-card {
+    grid-template-columns: minmax(0, 1fr) 46px;
+    padding-inline: 12px;
+  }
+
+  .profile-week-card__chart {
+    gap: 4px;
+  }
+
+  .profile-timeline-row {
+    grid-template-columns: 54px 14px 72px minmax(0, 1fr) 16px;
+    gap: 7px;
+    padding: 10px 8px;
+  }
+
+  .profile-timeline-row__image {
+    width: 72px;
+    height: 54px;
+    border-radius: 12px;
+  }
+
+  .profile-timeline-row__body strong {
+    font-size: 16px;
+  }
+
+  .profile-timeline-row__body small {
+    font-size: 11.5px;
+  }
+
+  .profile-timeline-row__arrow {
+    font-size: 28px;
   }
 
   .profile-head h2 {
