@@ -1,4 +1,4 @@
-/* Portionly — static app logic, Figma-style dashboard + profile history + recipe cards v114 */
+/* Portionly — static app logic, Figma-style dashboard + profile history + recipe cards v115 */
 (() => {
   "use strict";
 
@@ -1879,7 +1879,40 @@
 
     state.cookedHistory = [entry, ...state.cookedHistory].slice(0, 500);
     saveCookedHistory();
-    showToast("Приятного аппетита 😋", "success");
+    openRecipeServedSuccess(recipe);
+  }
+
+  function openRecipeServedSuccess(recipe) {
+    const screen = state.refs.recipeScreen;
+    if (!recipe || !screen) return;
+
+    state.activeRecipeId = recipe.id;
+    screen.innerHTML = recipeServedSuccessTemplate(recipe);
+    screen.hidden = false;
+    screen.setAttribute("aria-hidden", "false");
+    document.body.classList.add("recipe-screen-open");
+
+    requestAnimationFrame(() => {
+      screen.classList.add("visible");
+      screen.scrollTo({ top: 0, behavior: "auto" });
+    });
+  }
+
+  function recipeServedSuccessTemplate(recipe) {
+    return `
+      <article class="recipe-screen__panel recipe-served-success-screen" role="dialog" aria-modal="true" aria-label="Блюдо подано: ${escapeHTML(recipe.title)}">
+        <section class="recipe-served-success-card">
+          <div class="recipe-served-success-card__icon" aria-hidden="true">✓</div>
+          <div class="recipe-served-success-card__copy">
+            <span>Подано к столу</span>
+            <h2>Ты молодец! Приятного аппетита</h2>
+            <p>Не забудь оценить блюдо в профиле</p>
+          </div>
+          <button class="recipe-served-success-card__button" type="button" data-action="served-home" data-recipe-id="${escapeHTML(recipe.id)}">
+            Выйти в главное меню
+          </button>
+        </section>
+      </article>`;
   }
 
   function openCookedRatingScreen(recipeId, entryId) {
@@ -2143,6 +2176,12 @@
     if (actionName === "served") {
       event.preventDefault();
       markRecipeServed(recipeId);
+      return;
+    }
+
+    if (actionName === "served-home") {
+      event.preventDefault();
+      showDashboard();
       return;
     }
 
