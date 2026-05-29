@@ -1,4 +1,4 @@
-/* Portionly — static app logic, Figma-style dashboard + profile history + recipe cards v115 */
+/* Portionly — modular static app entry */
 (() => {
   "use strict";
 
@@ -55,6 +55,7 @@
     filterSwapTimer: null,
     filterSettleTimer: null,
     cardGesture: null,
+    backSwipe: null,
     recipeVariantIndexes: {},
     recipeCardHeightTimer: null,
     activeRecipeId: null,
@@ -236,7 +237,7 @@
   function bindStaticEvents() {
     const r = state.refs;
 
-    r.appBackBtn?.addEventListener("click", showDashboard);
+    r.appBackBtn?.addEventListener("click", navigateBack);
     r.aboutToggleBtn?.addEventListener("click", openProfileScreen);
     r.aboutCloseBtn?.addEventListener("click", closeAboutPanel);
     r.clearAllBtn?.addEventListener("click", clearSelection);
@@ -291,11 +292,16 @@
     r.cardsGrid?.addEventListener("load", event => {
       if (event.target?.matches?.(".recipe-hero img")) scheduleRecipeCardHeightSync();
     }, true);
+    document.addEventListener("touchstart", handleBackSwipeStart, { passive: true });
+    document.addEventListener("touchmove", handleBackSwipeMove, { passive: true });
+    document.addEventListener("touchend", handleBackSwipeEnd, { passive: true });
+    document.addEventListener("touchcancel", handleBackSwipeCancel, { passive: true });
     r.selectedStrip?.addEventListener("click", handleBasketDishAction);
     r.selectedStrip?.addEventListener("change", handleDishPantryChange);
     r.selectedStrip?.addEventListener("input", handleDishPantryAmountInput);
     r.selectedStrip?.addEventListener("focusin", handleDishPantryAmountFocus);
     r.selectedStrip?.addEventListener("focusout", handleDishPantryAmountBlur);
+    r.totalsList?.addEventListener("click", handleShoppingListAction);
 
     document.addEventListener("keydown", event => {
       if (event.key === "Escape") {
@@ -398,6 +404,78 @@
     requestAnimationFrame(() => {
       state.refs.filterShell?.scrollIntoView?.({ behavior: "smooth", block: "start" });
     });
+  }
+
+
+  function navigateBack() {
+    if (isModalOpen()) {
+      closeModals();
+      return;
+    }
+
+    if (state.activeRecipeId) {
+      closeRecipeScreen();
+      return;
+    }
+
+    if (state.searchOpen || state.search.trim() || !state.dashboardOpen) {
+      showDashboard();
+      return;
+    }
+
+    showDashboard();
+  }
+
+  function handleBackSwipeStart(event) {
+    const touch = event.touches?.[0];
+    if (!touch) return;
+    if (event.target?.closest?.("input, textarea, select, button, [contenteditable='true'], .recipe-card--variants")) return;
+
+    state.backSwipe = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      lastX: touch.clientX,
+      lastY: touch.clientY,
+      horizontal: false,
+      cancelled: false
+    };
+  }
+
+  function handleBackSwipeMove(event) {
+    const gesture = state.backSwipe;
+    const touch = event.touches?.[0];
+    if (!gesture || !touch) return;
+
+    gesture.lastX = touch.clientX;
+    gesture.lastY = touch.clientY;
+
+    const dx = gesture.lastX - gesture.startX;
+    const dy = gesture.lastY - gesture.startY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+
+    if (absY > 18 && absY > absX * 1.2) {
+      gesture.cancelled = true;
+      return;
+    }
+
+    if (dx > 28 && absX > absY * 1.35) {
+      gesture.horizontal = true;
+    }
+  }
+
+  function handleBackSwipeEnd() {
+    const gesture = state.backSwipe;
+    state.backSwipe = null;
+    if (!gesture || gesture.cancelled || !gesture.horizontal) return;
+
+    const dx = gesture.lastX - gesture.startX;
+    const dy = Math.abs(gesture.lastY - gesture.startY);
+    if (dx >= 84 && dx > dy * 1.45) navigateBack();
+  }
+
+  function handleBackSwipeCancel() {
+    state.backSwipe = null;
   }
 
   function renderSearchState() {
@@ -516,6 +594,8 @@
       if (actionName === "open-detail") openRecipeScreen(recipeId);
       if (actionName === "expand") toggleExpanded(recipeId);
       if (actionName === "favorite") toggleFavorite(recipeId);
+      if (actionName === "quick-add") addRecipeToShoppingList(recipeId);
+      if (actionName === "quick-served") markRecipeServed(recipeId);
       if (actionName === "recipe-step") updateRecipeSetting(recipeId, action.dataset.key, Number(action.dataset.delta || 0));
       if (actionName === "note-open") openNoteEditor(recipeId);
       if (actionName === "note-cancel") cancelNoteEditor(recipeId);
@@ -683,11 +763,6 @@
     const recipes = getRecipes();
     const favoriteCount = state.favoriteIds.length;
 
-    if (state.activeCategory === "favorites" && favoriteCount === 0) {
-      state.dashboardOpen = true;
-      state.activeCategory = "all";
-    }
-
     const categoryItems = categories.map(category => {
       const categoryRecipes = category.id === "all"
         ? recipes
@@ -702,7 +777,7 @@
       id: "favorites",
       title: "Избранное",
       count: favoriteCount,
-      disabled: favoriteCount === 0
+      disabled: false
     };
 
     if (allIndex >= 0) categoryItems.splice(allIndex + 1, 0, favoriteItem);
@@ -997,8 +1072,10 @@
       if (empty) {
         empty.hidden = visibleRecipes.length > 0;
         empty.textContent = hasQuery
-          ? "Ничего не найдено. Попробуй другой запрос."
-          : "В этом разделе пока нет блюд.";
+          ? "Ничего не найдено. Попробуй другой запрос или ингредиент."
+          : state.activeCategory === "favorites"
+            ? "В избранном пока пусто. Нажми на звёздочку у блюда, чтобы сохранить его здесь."
+            : "В этом разделе пока нет блюд.";
       }
       scheduleRecipeCardHeightSync();
     };
@@ -1607,6 +1684,15 @@
             </div>
           </div>
 
+          <div class="recipe-quick-actions" aria-label="Быстрые действия">
+            <button class="recipe-quick-action recipe-quick-action--accent ${state.selectedIds.includes(recipe.id) ? "active" : ""}" type="button" data-action="quick-add" data-recipe-id="${escapeHTML(recipe.id)}" aria-label="Добавить ингредиенты в список покупок">
+              <span aria-hidden="true">＋</span><strong>${state.selectedIds.includes(recipe.id) ? "В списке" : "В покупки"}</strong>
+            </button>
+            <button class="recipe-quick-action" type="button" data-action="quick-served" data-recipe-id="${escapeHTML(recipe.id)}" aria-label="Отметить блюдо приготовленным">
+              <span aria-hidden="true">✓</span><strong>Готово</strong>
+            </button>
+          </div>
+
           <button class="expand-toggle ${expanded ? "open" : ""}" type="button" data-action="expand" data-recipe-id="${escapeHTML(recipe.id)}" aria-expanded="${expanded ? "true" : "false"}" aria-controls="recipe-details-${escapeHTML(recipe.id)}">
             ${detailsIconMarkup()}
             <span>${expanded ? "Скрыть рецепт" : "Открыть рецепт"}</span>
@@ -2110,6 +2196,26 @@
     saveCookedHistory();
     showToast("Оценка сохранена", "success");
     openProfileRecipeStats(entry.recipeId);
+  }
+
+
+  function addRecipeToShoppingList(recipeId) {
+    const recipe = getRecipe(recipeId);
+    if (!recipe) return;
+
+    if (!state.selectedIds.includes(recipeId)) {
+      state.selectedIds.push(recipeId);
+      saveJson(STORAGE_SELECTED, state.selectedIds);
+      cleanupDishPantryMap();
+      updateSelectionUI();
+      updateRecipeCardDynamic(recipeId);
+      updateRecipeScreenDynamic(recipeId);
+      renderCategories();
+      showToast("Ингредиенты добавлены в список покупок");
+      return;
+    }
+
+    showToast("Ингредиенты уже в списке покупок", "neutral");
   }
 
   function addRecipeToCartFromScreen(recipeId) {
@@ -3500,6 +3606,35 @@
     };
   }
 
+
+  function handleShoppingListAction(event) {
+    const action = event.target.closest("[data-action]");
+    if (!action || action.dataset.action !== "clear-bought") return;
+
+    event.preventDefault();
+    clearBoughtProducts();
+  }
+
+  function clearBoughtProducts() {
+    let changed = false;
+
+    Object.keys(state.pantryMap).forEach(key => {
+      if (state.pantryMap[key]?.checked) {
+        delete state.pantryMap[key];
+        changed = true;
+      }
+    });
+
+    if (!changed) {
+      showToast("Купленных продуктов пока нет", "neutral");
+      return;
+    }
+
+    saveJson(STORAGE_PANTRY, state.pantryMap);
+    renderBasketModal();
+    showToast("Купленные продукты очищены", "neutral");
+  }
+
   function basketFlatProductsTemplate(totals) {
     const groups = buildIngredientGroups(totals).filter(group => group.items.length);
 
@@ -3513,7 +3648,14 @@
       `;
     }
 
-    return groups.map(group => `
+    const boughtCount = Object.values(state.pantryMap).filter(entry => entry?.checked).length;
+
+    return `
+      <div class="shopping-toolbar">
+        <span>${boughtCount ? `${boughtCount} ${plural(boughtCount, "продукт", "продукта", "продуктов")} отмечено как куплено` : "Отмечай продукты внутри блюд — список пересчитается сам"}</span>
+        <button type="button" data-action="clear-bought" ${boughtCount ? "" : "disabled"}>Очистить купленные</button>
+      </div>
+    ` + groups.map(group => `
       <section class="ingredient-group ingredient-group--flat">
         <header class="ingredient-group__head">
           <div class="ingredient-group__title"><span aria-hidden="true"></span><strong>${escapeHTML(group.title)}</strong></div>
@@ -3663,6 +3805,7 @@
 
     saveJson(STORAGE_PANTRY, state.pantryMap);
     renderBasketModal();
+    showToast(toggle.checked ? "Продукт отмечен как купленный" : "Продукт снова в списке", "neutral");
   }
 
   function handleDishPantryAmountInput(event) {
@@ -3963,6 +4106,7 @@
     }
   }
 
+
   function warmImage(url) {
     if (!url) return;
     const img = new Image();
@@ -4108,4 +4252,5 @@
   } else {
     init();
   }
+
 })();
